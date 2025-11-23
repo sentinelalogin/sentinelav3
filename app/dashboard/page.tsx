@@ -1,31 +1,83 @@
-import { supabaseServer } from "@/lib/supabase-server";
-import { LogoutButton } from "@/components/LogoutButton";
+"use client";
 
-export default async function DashboardPage() {
-  const supabase = supabaseServer();
-  const { data: relatos } = await supabase
-    .from("relatos")
-    .select("id, titulo, conteudo, criado_em, relatado:relatado_id (nome, cidade, link_social)")
-    .order("criado_em", { ascending: false });
+import { useState } from "react";
+import { Button } from "../../components/ui/button";
+
+import ModalBuscar from "../../components/modals/ModalBuscar";
+import ModalResultados from "../../components/modals/ModalResultados";
+import ModalCadastroPessoa from "../../components/modals/ModalCadastroPessoa";
+import ModalRelato from "../../components/modals/ModalRelato";
+
+export default function DashboardPage() {
+  const [openBuscar, setOpenBuscar] = useState(false);
+  const [openResultados, setOpenResultados] = useState(false);
+  const [openCadastroPessoa, setOpenCadastroPessoa] = useState(false);
+  const [openRelato, setOpenRelato] = useState(false);
+
+  const [resultados, setResultados] = useState<any[]>([]);
+  const [pessoaSelecionada, setPessoaSelecionada] = useState<any>(null);
 
   return (
-    <div className="p-6">
-      <header className="flex justify-between">
-        <h1 className="text-2xl font-bold text-pink-600">Painel Sentinela V3</h1>
-        <LogoutButton />
-      </header>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Painel Sentinela V3</h1>
 
-      <h2 className="text-lg mt-6 font-bold">Relatos</h2>
+      <div className="space-y-4">
+        <Button className="w-full" onClick={() => setOpenBuscar(true)}>
+          Buscar Relatado
+        </Button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        {(relatos || []).map((item) => (
-          <div key={item.id} className="p-4 bg-white rounded shadow">
-            <h3 className="font-bold text-lg">{item.titulo}</h3>
-            <p className="text-sm text-gray-600">{item.relatado?.cidade}</p>
-            <p className="mt-2 text-gray-800">{item.conteudo}</p>
-          </div>
-        ))}
+        <Button variant="secondary" className="w-full">
+          Nova Consulta (em breve)
+        </Button>
       </div>
+
+      {/* MODAL 1 */}
+      <ModalBuscar
+        open={openBuscar}
+        onClose={() => setOpenBuscar(false)}
+        onResult={(lista) => {
+          setResultados(lista);
+          setOpenResultados(true);
+        }}
+      />
+
+      {/* MODAL 2 */}
+      <ModalResultados
+        open={openResultados}
+        onClose={() => setOpenResultados(false)}
+        resultados={resultados}
+        onSelectPessoa={(pessoa) => {
+          setPessoaSelecionada(pessoa);
+          setOpenResultados(false);
+          setOpenRelato(true);
+        }}
+        onCadastrarNova={() => {
+          setOpenResultados(false);
+          setOpenCadastroPessoa(true);
+        }}
+      />
+
+      {/* MODAL 3 */}
+      <ModalCadastroPessoa
+        open={openCadastroPessoa}
+        onClose={() => setOpenCadastroPessoa(false)}
+        onCreated={(novaPessoa) => {
+          setPessoaSelecionada(novaPessoa);
+          setOpenCadastroPessoa(false);
+          setOpenRelato(true);
+        }}
+      />
+
+      {/* MODAL 4 */}
+      <ModalRelato
+        open={openRelato}
+        onClose={() => setOpenRelato(false)}
+        pessoa={pessoaSelecionada}
+        onSalvo={() => {
+          setOpenRelato(false);
+          alert("Relato salvo com sucesso!");
+        }}
+      />
     </div>
   );
 }
