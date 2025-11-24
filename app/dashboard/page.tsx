@@ -22,8 +22,19 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold mb-6">Painel Sentinela V3</h1>
 
       <div className="space-y-4">
+        {/* BOTÃO BUSCAR */}
         <Button className="w-full" onClick={() => setOpenBuscar(true)}>
           Buscar Relatado
+        </Button>
+
+        {/* BOTÃO NOVO RELATO – AGORA ABRE DIRETO */}
+        <Button
+          className="w-full"
+          onClick={() => {
+            setOpenRelato(true); // AGORA ABRE SEM EXIGIR SELEÇÃO
+          }}
+        >
+          Novo Relato
         </Button>
 
         <Button variant="secondary" className="w-full">
@@ -31,7 +42,7 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      {/* MODAL 1 */}
+      {/* MODAL - BUSCAR */}
       <ModalBuscar
         open={openBuscar}
         onClose={() => setOpenBuscar(false)}
@@ -41,7 +52,7 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* MODAL 2 */}
+      {/* MODAL - RESULTADOS */}
       <ModalResultados
         open={openResultados}
         onClose={() => setOpenResultados(false)}
@@ -57,7 +68,7 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* MODAL 3 */}
+      {/* MODAL - CADASTRO PESSOA */}
       <ModalCadastroPessoa
         open={openCadastroPessoa}
         onClose={() => setOpenCadastroPessoa(false)}
@@ -68,11 +79,12 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* MODAL 4 */}
+      {/* MODAL - RELATO */}
       <ModalRelato
         open={openRelato}
         onClose={() => setOpenRelato(false)}
         pessoa={pessoaSelecionada}
+        listaPessoas={resultados}       // <--- AQUI ENTRA A LISTA DE PESSOAS
         onSalvo={() => {
           setOpenRelato(false);
           alert("Relato salvo com sucesso!");
