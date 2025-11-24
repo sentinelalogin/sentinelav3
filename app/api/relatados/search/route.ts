@@ -1,20 +1,40 @@
-
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const { nome, cidade, rede_social, telefone } = body;
+  try {
+    const body = await req.json();
+    const { nome, cidade, rede_social } = body;
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
-  const { data } = await supabase
-    .from('pessoas_relatadas')
-    .select('*')
-    .ilike('nome_busca', `%${nome}%`);
+    // OR SEM QUEBRAS DE LINHA (FORMATO SUPABASE ACEITO)
+    const query = 
+      `nome.ilike.%${nome}%,cidade.ilike.%${cidade}%,rede_social.ilike.%${rede_social}%`;
 
-  return NextResponse.json({ resultados: data });
+    const { data, error } = await supabase
+      .from("pessoas_relatadas")
+      .select("*")
+      .or(query);
+
+    if (error) {
+      console.error("ERRO SUPABASE:", error);
+      return NextResponse.json({
+        resultados: [],
+        error: error.message,
+      });
+    }
+
+    return NextResponse.json({ resultados: data ?? [] });
+
+  } catch (e: any) {
+    console.error("ERRO API:", e);
+    return NextResponse.json({
+      resultados: [],
+      error: e.message,
+    });
+  }
 }

@@ -1,19 +1,40 @@
-
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  try {
+    const body = await req.json();
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
-  const { data, error } = await supabase
-    .from('pessoas_relatadas')
-    .insert([body])
-    .select();
+    const { pessoa_id, tipo, descricao, usuario_id } = body;
 
-  return NextResponse.json({ data, error });
+    if (!pessoa_id) {
+      return NextResponse.json(
+        { error: "pessoa_id é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("relatos")
+      .insert({
+        pessoa_id: pessoa_id,   // <-- AGORA CORRETO
+        tipo: tipo,
+        descricao: descricao,
+        usuario_id: usuario_id ?? null,
+      })
+      .select();
+
+    if (error) {
+      return NextResponse.json({ error }, { status: 400 });
+    }
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  }
 }
